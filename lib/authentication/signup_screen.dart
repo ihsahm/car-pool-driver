@@ -355,6 +355,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 TextField(
                   controller: carMakeTextEditingController,
+                  textInputAction: TextInputAction.next,
                   textCapitalization: TextCapitalization.words,
                   style: const TextStyle(color: ColorsConst.grey),
                   decoration: InputDecoration(
@@ -433,6 +434,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 TextField(
                   controller: carPlateNoTextEditingController,
                   textInputAction: TextInputAction.next,
+                  textCapitalization: TextCapitalization.words,                  
                   style: const TextStyle(color: ColorsConst.grey),
                   decoration: InputDecoration(
                     labelText: "Car Plate No",
@@ -559,7 +561,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (_driverImage != null) {
       return FileImage(_driverImage!);
     } else {
-      return const AssetImage('images/driver.png');
+      return const AssetImage('images/user.png');
     }
   }
 }
