@@ -61,7 +61,6 @@ dependencies:
   flutter_local_notifications: ^14.1.1
   cloud_firestore: ^4.8.0
   cached_network_image: ^3.2.3
-  smooth_star_rating: ^1.1.1
   flutter_rating_bar: ^4.0.1
 
 dev_dependencies:
