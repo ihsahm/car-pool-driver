@@ -1,8 +1,9 @@
 import 'dart:core';
+import 'package:car_pool_driver/Views/tabPages/trip_history_details.dart';
 import 'package:car_pool_driver/widgets/progress_dialog.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import '../../Constants/styles/colors.dart';
 import '../../Models/trip.dart';
 import '../../global/global.dart';
@@ -66,7 +67,7 @@ class _TripHistoryTabPageState extends State<TripHistoryTabPage> {
       });
     } catch (e) {
       // Log the error and return an empty list
-      Fluttertoast.showToast(msg: e.toString());
+      // Fluttertoast.showToast(msg: e.toString());
     }
     return itemList;
   }
@@ -86,7 +87,8 @@ class _TripHistoryTabPageState extends State<TripHistoryTabPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: (historyTrips.isEmpty) ? Colors.white : const Color(0xFFEDEDED),
+      backgroundColor:
+          (historyTrips.isEmpty) ? Colors.white : const Color(0xFFEDEDED),
       body: Stack(
         children: [
           if (isLoading)
@@ -108,7 +110,9 @@ class _TripHistoryTabPageState extends State<TripHistoryTabPage> {
                         ),
                         const Text(
                           "YOU HAVE NO PAST BOOKED TRIPS !!!",
-                          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.blueGrey),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blueGrey),
                         ),
                       ],
                     ),
@@ -116,113 +120,60 @@ class _TripHistoryTabPageState extends State<TripHistoryTabPage> {
                 : ListView.builder(
                     itemCount: historyTrips.length,
                     itemBuilder: (context, index) {
-                      return Column(
-                        children: [
-                          ListTile(
-                            title: Text(
-                              historyTrips[index].destinationLocation,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w100,
+                      return GestureDetector(
+                        child: Column(
+                          children: [
+                            ListTile(
+                              title: Text(
+                                historyTrips[index].destinationLocation,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w100,
+                                ),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Text(
+                                    '${DateFormat('EEEE, MMMM d, y').format(DateTime.parse(historyTrips[index].date))} at ${historyTrips[index].time}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  Text(
+                                    historyTrips[index].status.toUpperCase(),
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        color: (historyTrips[index].status ==
+                                                'finished')
+                                            ? Colors.greenAccent
+                                            : Colors.redAccent),
+                                  ),
+                                ],
+                              ),
+                              trailing: const Icon(Icons.navigate_next),
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => TripHistoryDetails(
+                                        item: trips[index])));
+                              },
+                            ),
+                            const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Divider(
+                                color: ColorsConst.grey,
                               ),
                             ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  height: 10,
-                                ),
-                                Text(
-                                  '${historyTrips[index].date} at ${historyTrips[index].time}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Text(
-                                  historyTrips[index].status.toUpperCase(),
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: (historyTrips[index].status ==
-                                              'finished')
-                                          ? Colors.greenAccent
-                                          : Colors.redAccent),
-                                ),
-                              ],
-                            ),
-                            trailing: const Icon(Icons.navigate_next),
-                            onTap: () {
-                              //  Navigator.of(context).push(MaterialPageRoute(
-                              //  builder: (context) => TripHistoryDetails(item:trips[index]),
-                              // ));
-                            },
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Divider(
-                              color: ColorsConst.grey,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       );
                     },
                   )
         ],
       ),
     );
-    /* body: Column(
-        children: [
-          Text(itemList.length.toString()),
-
-
-          ListView.builder(
-              shrinkWrap: true,
-              itemCount: itemList.length,
-              scrollDirection: Axis.vertical,
-              itemBuilder: (BuildContext context, int index){
-                final item = itemList[index];
-                return Card(
-                    shadowColor: Colors.transparent,
-                    elevation: 0,
-                    child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: ListTile(
-                    title : Text(itemList[index].pickUp.toString(),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),),
-                    subtitle:RichText(
-                        text: const TextSpan(
-                            text: "4th April , 2023 at 10:37AM",
-                            style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                fontFamily: 'Poppins',
-                                color: Colors.black,
-                                fontSize: 15),
-                            children: <TextSpan>[
-                              TextSpan(
-                                  text: "\nFinished",
-                                  style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      color: Colors.green,
-                                      fontSize: 15)
-                              )
-                            ])
-                    ),
-                    trailing: const Icon(Icons.arrow_forward),
-                    onTap: (){
-                      Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => TripHistoryDetails(item:item),
-                      ));
-                    },
-                  ),
-                ),
-
-                );
-              }
-
-              ),
-        ],
-      ),*/
   }
 }

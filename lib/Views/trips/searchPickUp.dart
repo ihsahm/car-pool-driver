@@ -1,17 +1,11 @@
 import 'package:car_pool_driver/Models/address.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:geolocator/geolocator.dart';
-import '../../Constants/styles/colors.dart';
 import '../../Constants/styles/styles.dart';
 import '../../Constants/widgets/loading.dart';
 import '../../Models/place_predictions.dart';
 import '../../config_map.dart';
-import '../../widgets/progress_dialog.dart';
 import '../assistants/assistant_methods.dart';
 import '../assistants/request_assistant.dart';
 import '../data handler/app_data.dart';
@@ -27,11 +21,11 @@ class _SearchPickUpScreenState extends State<SearchPickUpScreen> {
   TextEditingController pickUpTextEditingController = TextEditingController();
   bool _isLoading = false;
   TextEditingController destinationTextEditingController =
-  TextEditingController();
+      TextEditingController();
   late Position currentPosition;
 
-
   List<PlacePredictions> placePredictionList = [];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,21 +35,21 @@ class _SearchPickUpScreenState extends State<SearchPickUpScreen> {
           searchBar(context),
           (placePredictionList.isNotEmpty)
               ? Padding(
-            padding: const EdgeInsets.symmetric(
-                vertical: 8.0, horizontal: 16.0),
-            child: ListView.separated(
-              padding: const EdgeInsets.all(8.0),
-              itemBuilder: (context, index) {
-                return PredictionTile(
-                    placePredictions: placePredictionList[index]);
-              },
-              separatorBuilder: (BuildContext context, int index) =>
-              const Divider(),
-              itemCount: placePredictionList.length,
-              shrinkWrap: true,
-              physics: const ClampingScrollPhysics(),
-            ),
-          )
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 16.0),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(8.0),
+                    itemBuilder: (context, index) {
+                      return PredictionTile(
+                          placePredictions: placePredictionList[index]);
+                    },
+                    separatorBuilder: (BuildContext context, int index) =>
+                        const Divider(),
+                    itemCount: placePredictionList.length,
+                    shrinkWrap: true,
+                    physics: const ClampingScrollPhysics(),
+                  ),
+                )
               : Container(),
         ],
       ),
@@ -63,9 +57,9 @@ class _SearchPickUpScreenState extends State<SearchPickUpScreen> {
   }
 
   Widget searchBar(BuildContext context) {
-     String? placeAddress =
-         Provider.of<AppData>(context).pickUpLocation?.placeName;
-      pickUpTextEditingController.text = placeAddress!;
+    String? placeAddress =
+        Provider.of<AppData>(context).pickUpLocation?.placeName;
+    pickUpTextEditingController.text = placeAddress!;
     return Container(
       decoration: const BoxDecoration(color: Colors.white, boxShadow: [
         BoxShadow(
@@ -76,88 +70,112 @@ class _SearchPickUpScreenState extends State<SearchPickUpScreen> {
       ]),
       height: 300.0,
       child: Padding(
-        padding: const EdgeInsets.only(
-            left: 25.0, top: 35.0, right: 25.0, bottom: 20.0),
-        child: Column(children: [
-          const SizedBox(
-            height: 5.0,
-          ),
-          Stack(
-            children: [
-              GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Icon(Icons.arrow_back)),
-              const Center(
-                  child: Text(
-                    "Set destination",
-                    style: TextStyle(fontSize: 18.0),
-                  ))
-            ],
-          ),
-          const SizedBox(
-            height: 16.0,
-          ),
-          Row(
-            children: [
-              Expanded(
-                // ignore: avoid_unnecessary_containers
-                  child: Container(
-                    child: Padding(
-                      padding: const EdgeInsets.all(3.0),
-                      child: TextFormField(
-                        onChanged: (val) {
-                          findPlace(val);
-                        },
-                        decoration: InputDecoration(
-                          enabledBorder: StylesConst.textBorder,
-                          focusedBorder: StylesConst.textBorder,
-                          filled: true,
-                          label: const Text(
-                            "Pick-Up",
-                            style: TextStyle(fontSize: 17),
-                          ),
-                          labelStyle: StylesConst.labelStyle,
-                          suffixIcon: IconButton(
-                            icon: Icon(Icons.clear),
-                            onPressed: () {
-                              pickUpTextEditingController.clear();
-                            },
-                          ),
-                        ),
-                        controller: pickUpTextEditingController,
-                        textInputAction: TextInputAction.done,
-                      ),
-                    ),
-                  ))
-            ],
-          ),
-          const SizedBox(
-            height: 10.0,
-          ),
-        Column(
-          children: [
-            // Add your UI widgets here
-            ElevatedButton(
-              onPressed: () {
-                locatePosition();
-              },
-              child: Text("Use current position"),
+          padding: const EdgeInsets.only(
+              left: 25.0, top: 35.0, right: 25.0, bottom: 20.0),
+          child: Column(children: [
+            const SizedBox(
+              height: 5.0,
             ),
-            if (_isLoading)
-              Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: Column(
-                  children: [
-                    CircularProgressIndicator(),
-                  ],
+            Stack(
+              children: [
+                GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Icon(Icons.arrow_back)),
+                const Center(
+                    child: Text(
+                  "Set destination",
+                  style: TextStyle(fontSize: 18.0),
+                ))
+              ],
+            ),
+            const SizedBox(
+              height: 16.0,
+            ),
+            Row(
+              children: [
+                Expanded(
+                    // ignore: avoid_unnecessary_containers
+                    child: Container(
+                  child: Padding(
+                    padding: const EdgeInsets.all(3.0),
+                    child: TextFormField(
+                      onChanged: (val) {
+                        findPlace(val);
+                      },
+                      decoration: InputDecoration(
+                        enabledBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.greenAccent),
+                        ),
+                        focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.greenAccent)),
+                        label: const Text(
+                          "Pick-Up",
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        labelStyle: StylesConst.labelStyle,
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            pickUpTextEditingController.clear();
+                          },
+                        ),
+                      ),
+                      controller: pickUpTextEditingController,
+                      textInputAction: TextInputAction.done,
+                    ),
+                  ),
+                ))
+              ],
+            ),
+            const SizedBox(
+              height: 25.0,
+            ),
+            Column(
+              children: [
+                // Add your UI widgets here
+                TextButton(
+                  onPressed: () {
+                    locatePosition();
+                  },
+                  style: TextButton.styleFrom(
+                    primary: Colors.blue, // button text color
+                    backgroundColor: Colors.white, // button background color
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        // button border radius
+                        side: const BorderSide(
+                            color: Colors.greenAccent) // button border
+                        ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0), // button padding
+                  ),
+                  child: Row(
+                    children: const [
+                      Icon(Icons.location_on, color: Colors.greenAccent),
+                      // leading icon
+                      SizedBox(width: 8.0),
+                      // space between icon and text
+                      Text("Set current Location",
+                          style: TextStyle(
+                              fontSize: 14.0, color: Colors.greenAccent)),
+                      // button text
+                    ],
+                  ),
                 ),
-              ),
-          ],
-        ),
-        ])
-      ),
+                if (_isLoading)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Column(
+                      children: const [
+                        CircularProgressIndicator(),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ])),
     );
   }
 
@@ -181,10 +199,9 @@ class _SearchPickUpScreenState extends State<SearchPickUpScreen> {
         context,
       );
 
-      String? pickUpLocation =
-          Provider.of<AppData>(context, listen: false)
-              .pickUpLocation
-              ?.placeName;
+      String? pickUpLocation = Provider.of<AppData>(context, listen: false)
+          .pickUpLocation
+          ?.placeName;
       pickUpTextEditingController.text = (pickUpLocation.toString() == 'null')
           ? 'Retrieving Location...'
           : pickUpLocation.toString();
@@ -209,6 +226,7 @@ class _SearchPickUpScreenState extends State<SearchPickUpScreen> {
       });
     }
   }
+
   void findPlace(String placeName) async {
     if (placeName.length > 1) {
       String autoCompleteUrl =
@@ -237,6 +255,7 @@ class _SearchPickUpScreenState extends State<SearchPickUpScreen> {
 
 class PredictionTile extends StatelessWidget {
   final PlacePredictions placePredictions;
+
   const PredictionTile({Key? key, required this.placePredictions})
       : super(key: key);
 

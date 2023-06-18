@@ -1,5 +1,7 @@
 import 'package:car_pool_driver/Views/tabPages/myTrips.dart';
 import 'package:car_pool_driver/Views/tabPages/requests.dart';
+import 'package:car_pool_driver/global/global.dart';
+import 'package:car_pool_driver/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -8,6 +10,7 @@ import '../Constants/styles/colors.dart';
 import '../Views/tabPages/dashboard.dart';
 import '../Views/tabPages/profile_tab.dart';
 import '../Views/tabPages/trip_history_tab.dart';
+import '../authentication/not_accepted_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -83,50 +86,68 @@ class _MainScreenState extends State<MainScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: TabBarView(
-        physics: const NeverScrollableScrollPhysics(),
-        controller: tabController,
-        children: const [
-          Dashboard(),
-          TripHistoryTabPage(),
-          MyTrips(),
-          MyRequests(),
-          ProfileTabPage(),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: "History",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.directions_bus_filled_rounded),
-            label: "Trips",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt),
-            label: "Requests",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: "Settings",
-          ),
-        ],
-        unselectedItemColor: ColorsConst.grey,
-        selectedItemColor: ColorsConst.greenAccent,
-        backgroundColor: ColorsConst.white,
-        type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: const TextStyle(fontSize: 14),
-        showUnselectedLabels: true,
-        currentIndex: selectedIndex,
-        onTap: onItemClicked,
-      ),
-    );
+    return StreamBuilder(
+        stream: driversRef.child(currentFirebaseUser!.uid.toString()).onValue,
+        builder: (context, AsyncSnapshot snapshot) {
+          if (!snapshot.hasData && snapshot.data != null) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasData) {
+            Map<dynamic, dynamic> user = snapshot.data!.snapshot.value;
+            if (user['status'] == 'accepted') {
+              return Scaffold(
+                body: TabBarView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  controller: tabController,
+                  children: const [
+                    Dashboard(),
+                    TripHistoryTabPage(),
+                    MyTrips(),
+                    MyRequests(),
+                    ProfileTabPage(),
+                  ],
+                ),
+                bottomNavigationBar: BottomNavigationBar(
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.home),
+                      label: "Home",
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.history),
+                      label: "History",
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.directions_bus_filled_rounded),
+                      label: "Trips",
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.receipt),
+                      label: "Requests",
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.settings),
+                      label: "Settings",
+                    ),
+                  ],
+                  unselectedItemColor: ColorsConst.grey,
+                  selectedItemColor: ColorsConst.greenAccent,
+                  backgroundColor: ColorsConst.white,
+                  type: BottomNavigationBarType.fixed,
+                  selectedLabelStyle: const TextStyle(fontSize: 14),
+                  showUnselectedLabels: true,
+                  currentIndex: selectedIndex,
+                  onTap: onItemClicked,
+                ),
+              );
+            } else if (user['status'] == 'pending') {
+              return const NotAcceptedPage();
+            }
+          }
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        });
   }
 }

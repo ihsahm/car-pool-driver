@@ -5,6 +5,7 @@ import 'package:car_pool_driver/widgets/progress_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../Constants/styles/colors.dart';
 import '../../Models/requests.dart';
@@ -16,7 +17,6 @@ class GetRequests {
     List<Request> itemList = [];
 
     try {
-
       final dataSnapshot = await databaseReference
           .orderByChild('driverID')
           .equalTo(driverID)
@@ -114,8 +114,7 @@ class _MyRequestsState extends State<MyRequests> {
                             child: Text(
                               "It seems like you have no ride requests for now!!! ",
                               style: TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
                                   color: ColorsConst.blueGrey),
                               textAlign: TextAlign.center,
                             ),
@@ -143,7 +142,7 @@ class _MyRequestsState extends State<MyRequests> {
   }
 
   Widget buildUser(int index) => StreamBuilder(
-        stream: ref.child(requests[index].userID).onValue,
+        stream: ref.child(pendingRequest[index].userID).onValue,
         builder: (context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting &&
               userCnt == 0) {
@@ -153,7 +152,7 @@ class _MyRequestsState extends State<MyRequests> {
             return Text('Error: ${snapshot.error}');
           } else if (!snapshot.hasData ||
               snapshot.data?.snapshot?.value == null) {
-            return Container();
+            return Text(pendingRequest.length.toString());
           } else {
             Map<dynamic, dynamic> user = snapshot.data.snapshot.value;
             return buildTripData(index, user);
@@ -162,7 +161,7 @@ class _MyRequestsState extends State<MyRequests> {
       );
 
   Widget buildTripData(int index, Map<dynamic, dynamic> user) => StreamBuilder(
-        stream: tripRef.child(requests[index].tripID).onValue,
+        stream: tripRef.child(pendingRequest[index].tripID).onValue,
         builder: (context, AsyncSnapshot snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting &&
               userCnt == 0) {
@@ -195,7 +194,7 @@ class _MyRequestsState extends State<MyRequests> {
             ),
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Container(
-                constraints: const BoxConstraints(maxWidth: 300),
+                constraints: const BoxConstraints(maxWidth: 250),
                 child: Text(
                   trip['destinationLocation'],
                   style: const TextStyle(
@@ -206,7 +205,7 @@ class _MyRequestsState extends State<MyRequests> {
               ),
               const Divider(),
               Container(
-                constraints: const BoxConstraints(maxWidth: 300),
+                constraints: const BoxConstraints(maxWidth: 250),
                 child: Text(
                   trip['pickUpLocation'],
                   style: const TextStyle(
@@ -229,7 +228,8 @@ class _MyRequestsState extends State<MyRequests> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(trip['time']),
-                  Text(trip['date']),
+                  Text(DateFormat('EEEE, MMMM d, y')
+                      .format(DateTime.parse(trip['date']))),
                 ],
               ),
             ),
@@ -246,7 +246,7 @@ class _MyRequestsState extends State<MyRequests> {
                     backgroundImage: NetworkImage(
                       user['userImage'],
                     ),
-                    radius: 35,
+                    radius: 25,
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
@@ -254,11 +254,15 @@ class _MyRequestsState extends State<MyRequests> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Text(user['name'],
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            )),
+                        Container(
+                          constraints: const BoxConstraints(maxWidth: 130),
+                          child: Text(user['name'],
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                overflow: TextOverflow.ellipsis,
+                              )),
+                        ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(0.0, 0, 3.0, 0),
                           child: Text(user['phone']),
@@ -273,7 +277,7 @@ class _MyRequestsState extends State<MyRequests> {
                 children: [
                   SizedBox(
                     height: 40,
-                    width: 125,
+                    width: 115,
                     child: ElevatedButton(
                       onPressed:
                           //acceptRequest(requests[index]);
@@ -301,7 +305,7 @@ class _MyRequestsState extends State<MyRequests> {
                   ),
                   SizedBox(
                     height: 40,
-                    width: 125,
+                    width: 115,
                     child: ElevatedButton(
                       onPressed: _isDenyButtonClickedList[index]
                           ? null

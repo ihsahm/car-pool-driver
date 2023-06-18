@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:car_pool_driver/Constants/widgets/loading.dart';
 import 'package:car_pool_driver/config_map.dart';
+import 'package:car_pool_driver/global/global.dart';
 import 'package:car_pool_driver/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -38,7 +39,7 @@ class _DashboardState extends State<Dashboard> {
   final Completer<GoogleMapController> _controllerGoogleMap = Completer();
   late GoogleMapController newgoogleMapController;
   static const CameraPosition _kGooglePlex =
-  CameraPosition(target: LatLng(9.1450, 40.4897), zoom: 1);
+      CameraPosition(target: LatLng(9.1450, 40.4897), zoom: 1);
 
   List<LatLng> pLineCoordinates = [];
 
@@ -57,15 +58,60 @@ class _DashboardState extends State<Dashboard> {
   TextEditingController longitudeController = TextEditingController();
   TextEditingController destinationLatitudeController = TextEditingController();
   TextEditingController destinationLongitudeController =
-  TextEditingController();
+      TextEditingController();
   TextEditingController dateController = TextEditingController();
   TextEditingController timeController = TextEditingController();
   TextEditingController estimatedCostController = TextEditingController();
+  Map<String, List<String>> dropdownMap = {
+    'Car': ['1 Passenger', '2 Passengers', '3 Passengers', '4 Passengers'],
+    'Van': [
+      '1 Passenger',
+      '2 Passengers',
+      '3 Passengers',
+      '4 Passengers',
+      '5 Passengers',
+      '6 Passengers',
+      '7 Passengers',
+      '8 Passengers',
+      '9 Passengers',
+      '10 Passengers',
+      '11 Passengers',
+      '12 Passengers'
+    ],
+    'MiniVan': [
+      '1 Passenger',
+      '2 Passengers',
+      '3 Passengers',
+      '4 Passengers',
+      '5 Passengers',
+      '6 Passengers',
+      '7 Passengers'
+    ]
+  };
+
+  String currentSelectedValue = '';
+  List<String> dropdownItems = [];
+  String? carType;
 
   late String passengers;
   final _formKey = GlobalKey<FormState>();
   Set<Marker> markersSet = {};
   Set<Circle> circlesSet = {};
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    DatabaseReference starCountRef = FirebaseDatabase.instance
+        .ref('drivers/${currentFirebaseUser!.uid}/car_type');
+    starCountRef.onValue.listen((DatabaseEvent event) {
+      final data = event.snapshot.value.toString();
+      carType = data;
+      print("status: " + data.toString());
+    });
+    String currentSelectedValue = 'Car';
+    dropdownItems = dropdownMap['Car']!;
+  }
 
   void locatePosition() async {
     LocationPermission permission;
@@ -80,13 +126,13 @@ class _DashboardState extends State<Dashboard> {
     LatLng latLngPosition = LatLng(position.latitude, position.longitude);
 
     CameraPosition cameraPosition =
-    CameraPosition(target: latLngPosition, zoom: 20.0);
+        CameraPosition(target: latLngPosition, zoom: 20.0);
     newgoogleMapController
         .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
     // ignore: use_build_context_synchronously
     String address =
-    // ignore: use_build_context_synchronously
-    await AssistantMethods.searchCoordinateAddress(position, context);
+        // ignore: use_build_context_synchronously
+        await AssistantMethods.searchCoordinateAddress(position, context);
   }
 
   @override
@@ -174,38 +220,29 @@ class _DashboardState extends State<Dashboard> {
                               child: Column(
                                 children: [
                                   TextFormField(
-                                    controller:
-                                    pickUpLocationController,
+                                    controller: pickUpLocationController,
                                     decoration: const InputDecoration(
-
-                                        enabledBorder:
-                                        UnderlineInputBorder(
+                                        enabledBorder: UnderlineInputBorder(
                                           borderSide: BorderSide(
-                                              color: Colors
-                                                  .greenAccent),
+                                              color: Colors.greenAccent),
                                         ),
-                                        focusedBorder:
-                                        UnderlineInputBorder(
+                                        focusedBorder: UnderlineInputBorder(
                                             borderSide: BorderSide(
-                                                color: Colors
-                                                    .greenAccent)),
+                                                color: Colors.greenAccent)),
                                         labelText: "Pick-Up",
                                         hintStyle: TextStyle(
                                           color: Colors.grey,
                                           fontSize: 16,
                                         )),
-
-                                    style: const TextStyle(
-                                        fontSize: 14.0),
+                                    style: const TextStyle(fontSize: 14.0),
                                     readOnly: true,
                                     onTap: () async {
                                       var res = await Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                               builder: ((context) =>
-                                              const SearchPickUpScreen())));
-                                      if (res ==
-                                          "obtainDirection") {
+                                                  const SearchPickUpScreen())));
+                                      if (res == "obtainDirection") {
                                         await getPlaceDirection();
                                       }
                                     },
@@ -232,7 +269,7 @@ class _DashboardState extends State<Dashboard> {
                                     readOnly: true,
                                     onTap: () async {
                                       if (pickUpLocationController.text
-                                          .toString() ==
+                                              .toString() ==
                                           'Retrieving Location...') {
                                         showDialog(
                                           context: context,
@@ -256,7 +293,7 @@ class _DashboardState extends State<Dashboard> {
                                             context,
                                             MaterialPageRoute(
                                                 builder: ((context) =>
-                                                const SearchScreen())));
+                                                    const SearchScreen())));
                                         if (res == "obtainDirection") {
                                           await getPlaceDirection();
                                         }
@@ -280,20 +317,21 @@ class _DashboardState extends State<Dashboard> {
                               primary: Colors.greenAccent,
                               elevation: 3,
                               shape: RoundedRectangleBorder(
-                                //to set border radius to button
+                                  //to set border radius to button
                                   borderRadius: BorderRadius.circular(10)),
                             ),
                             onPressed: () {
                               if (pickUpLocationController.text.toString() ==
-                                  'Retrieving Location...' ||
+                                      'Retrieving Location...' ||
                                   destinationLocationController.text
-                                      .toString() ==
+                                          .toString() ==
                                       'Where are you going?') {
                                 showDialog(
                                   context: context,
                                   builder: (BuildContext context) {
                                     return AlertDialog(
-                                      content: const Text('Fields can not be empty!'),
+                                      content: const Text(
+                                          'Fields can not be empty!'),
                                       actions: [
                                         TextButton(
                                           onPressed: () {
@@ -312,7 +350,7 @@ class _DashboardState extends State<Dashboard> {
                               //    builder: (context) => AvailableDrivers()));
                             },
                             child: const Text(
-                              "Add Trip",
+                              "Add Button",
                               style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 18),
                             )),
@@ -328,6 +366,34 @@ class _DashboardState extends State<Dashboard> {
 
   Future<void> _saveToFirebase(BuildContext context) async {
     String dropdownvalue = '1 passenger';
+
+    String? currentSelectedVehicle = carType;
+    String currentSelectedPassenger = '1 Passenger';
+    Map<String, List<String>> dropdownItemsMap = {
+      'Car': ['1 Passenger', '2 Passengers', '3 Passengers', '4 Passengers'],
+      'Van': [
+        '1 Passenger',
+        '2 Passengers',
+        '3 Passengers',
+        '4 Passengers',
+        '5 Passengers',
+        '6 Passengers',
+        '7 Passengers',
+        '8 Passengers',
+        '9 Passengers',
+        '10 Passengers',
+        '11 Passengers',
+        '12 Passengers'
+      ],
+      'Mini-Van': [
+        '1 Passenger',
+        '2 Passengers',
+        '3 Passengers',
+        '4 Passengers',
+        '5 Passengers',
+        '6 Passengers'
+      ]
+    };
 
     estimatedCostController.text = estimateCost(
         double.parse(latitudeController.text.toString()),
@@ -352,13 +418,11 @@ class _DashboardState extends State<Dashboard> {
                       enabled: false,
                       decoration: const InputDecoration(
                         enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                              color: Colors.greenAccent),
+                          borderSide: BorderSide(color: Colors.greenAccent),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                                color: Colors.greenAccent)),
-                        labelText:'Pick-Up',
+                            borderSide: BorderSide(color: Colors.greenAccent)),
+                        labelText: 'Pick-Up',
                         icon: Icon(Icons.location_on_rounded),
                       ),
                     ),
@@ -370,12 +434,10 @@ class _DashboardState extends State<Dashboard> {
                       enabled: false,
                       decoration: const InputDecoration(
                         enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                              color: Colors.greenAccent),
+                          borderSide: BorderSide(color: Colors.greenAccent),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                                color: Colors.greenAccent)),
+                            borderSide: BorderSide(color: Colors.greenAccent)),
                         labelText: 'Drop-Off',
                         icon: Icon(Icons.location_on_outlined),
                       ),
@@ -388,12 +450,10 @@ class _DashboardState extends State<Dashboard> {
                       enabled: false,
                       decoration: const InputDecoration(
                         enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                              color: Colors.greenAccent),
+                          borderSide: BorderSide(color: Colors.greenAccent),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                                color: Colors.greenAccent)),
+                            borderSide: BorderSide(color: Colors.greenAccent)),
                         labelText: 'Estimated Cost',
                         icon: Icon(Icons.money),
                       ),
@@ -401,43 +461,34 @@ class _DashboardState extends State<Dashboard> {
                     const SizedBox(
                       height: 13.0,
                     ),
-                    ButtonTheme(
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButtonFormField<String>(
-                          decoration: const InputDecoration(
-                            icon: Icon(Icons.person),
-                            enabledBorder: UnderlineInputBorder(
-                              borderSide: BorderSide(
-                                  color: Colors.greenAccent),
-                            ),
-                            focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                    color: Colors.greenAccent)),
-                          ),
-
-                          validator: (value) =>
-                          value == null ? 'Passengers' : null,
-                          value: currentSelectedValue,
-                          hint: const Text('Passengers'),
-                          onChanged: (newValue) {
-                            setState(() {
-                              currentSelectedValue = newValue;
-                              this.passengers = newValue!;
-                            });
-                          },
-                          items: <String>[
-                            '1 Passenger',
-                            '2 Passengers',
-                            '3 Passengers',
-                            '4 Passengers',
-                          ].map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
+                    DropdownButtonFormField<String>(
+                      value: currentSelectedPassenger,
+                      items: dropdownItemsMap[currentSelectedVehicle]!
+                          .map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          currentSelectedPassenger = newValue!;
+                          this.passengers = newValue;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        labelText: "Select passengers",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5.0),
                         ),
                       ),
+                      hint: Text('Select Passengers'),
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Please select passengers';
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(
                       height: 13.0,
@@ -451,7 +502,7 @@ class _DashboardState extends State<Dashboard> {
                             ),
                             focusedBorder: UnderlineInputBorder(
                                 borderSide:
-                                BorderSide(color: Colors.greenAccent)),
+                                    BorderSide(color: Colors.greenAccent)),
                             labelText: 'Date',
                             icon: Icon(Icons.calendar_month_rounded)),
                         onTap: () async {
@@ -478,7 +529,7 @@ class _DashboardState extends State<Dashboard> {
                             ),
                             focusedBorder: UnderlineInputBorder(
                                 borderSide:
-                                BorderSide(color: Colors.greenAccent)),
+                                    BorderSide(color: Colors.greenAccent)),
                             labelText: 'Time',
                             icon: Icon(Icons.alarm)),
                         onTap: () async {
@@ -489,9 +540,9 @@ class _DashboardState extends State<Dashboard> {
                           if (pickedTime != null) {
                             setState(() {
                               final localizations =
-                              MaterialLocalizations.of(context);
+                                  MaterialLocalizations.of(context);
                               final formattedTimeOfDay =
-                              localizations.formatTimeOfDay(pickedTime);
+                                  localizations.formatTimeOfDay(pickedTime);
                               timeController.text = formattedTimeOfDay;
                             });
                           }
@@ -546,7 +597,7 @@ class _DashboardState extends State<Dashboard> {
 
     PolylinePoints polylinePoints = PolylinePoints();
     List<PointLatLng> decodePolylinePointsResult =
-    polylinePoints.decodePolyline(details!.encodedPoints.toString());
+        polylinePoints.decodePolyline(details!.encodedPoints.toString());
     pLineCoordinates.clear();
     if (decodePolylinePointsResult.isNotEmpty) {
       decodePolylinePointsResult.forEach((PointLatLng pointLatLng) {
@@ -595,7 +646,7 @@ class _DashboardState extends State<Dashboard> {
     Marker pickUpLocationMarker = Marker(
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
         infoWindow:
-        InfoWindow(title: initialPos.placeName, snippet: "My location"),
+            InfoWindow(title: initialPos.placeName, snippet: "My location"),
         position: pickUpLatLng,
         markerId: const MarkerId(
           "pickUpId",
@@ -603,7 +654,7 @@ class _DashboardState extends State<Dashboard> {
     Marker dropOffLocationMarker = Marker(
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
         infoWindow:
-        InfoWindow(title: finalPos.placeName, snippet: "My destination"),
+            InfoWindow(title: finalPos.placeName, snippet: "My destination"),
         position: dropOffLatLng,
         markerId: const MarkerId(
           "dropOffId",
@@ -644,7 +695,6 @@ class _DashboardState extends State<Dashboard> {
     int size = int.parse(passengers[0]); // the size of the list
     List<String> list = List.generate(size, (index) => "");
 
-
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       try {
@@ -652,10 +702,11 @@ class _DashboardState extends State<Dashboard> {
           showDialog(
               context: context,
               barrierDismissible: false,
-              builder: (BuildContext c){
-                return ProgressDialog(message: "Processing, Please wait...",);
-              }
-          );
+              builder: (BuildContext c) {
+                return ProgressDialog(
+                  message: "Processing, Please wait...",
+                );
+              });
         });
         await tripsRef.child(tripID).set({
           "tripID": tripID,
@@ -672,7 +723,7 @@ class _DashboardState extends State<Dashboard> {
           "time": timeController.text.toString(),
           "availableSeats": passengers[0],
           "estimatedCost": estimatedCostController.text.toString(),
-          "status": "scheduled"
+          "status": "scheduled",
         });
         Navigator.pop(context);
         // ignore: use_build_context_synchronously
@@ -686,21 +737,23 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
-  String estimateCost(double pickUpLat, double pickUpLong, double destLat, double  destLong){
+  String estimateCost(
+      double pickUpLat, double pickUpLong, double destLat, double destLong) {
     double baseFare = 80;
     double costPerMin = 2;
     double costPerKm = 12;
 
-    double distance = estimateDistance(pickUpLat, pickUpLong, destLat, destLong);
+    double distance =
+        estimateDistance(pickUpLat, pickUpLong, destLat, destLong);
     double time = estimateTime(distance);
 
-    double cost = baseFare + (distance * costPerKm)  + (time * costPerMin);
+    double cost = baseFare + (distance * costPerKm) + (time * costPerMin);
 
     return cost.round().toString();
   }
 
-  double estimateDistance(double pickUpLat, double pickUpLong, double destLat, double  destLong){
-
+  double estimateDistance(
+      double pickUpLat, double pickUpLong, double destLat, double destLong) {
     double distance, earthRadius = 6371;
     double lat1Rad = degreesToRadians(pickUpLat);
     double lon1Rad = degreesToRadians(pickUpLong);
@@ -718,14 +771,14 @@ class _DashboardState extends State<Dashboard> {
     distance = 2 * earthRadius * asin(sqrt(hav));
 
     return distance;
-
   }
+
   double degreesToRadians(double degrees) {
     // Helper function to convert degrees to radians
     return degrees * pi / 180;
   }
 
-  double estimateTime(double distance){
+  double estimateTime(double distance) {
     double averageSpeed = 20;
 
     return distance / averageSpeed * 60;

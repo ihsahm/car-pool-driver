@@ -73,16 +73,6 @@ class _MyTripsState extends State<MyTrips> {
   }
 
   Future<void> getMyTrips() async {
-    Future.delayed(Duration.zero, () {
-      showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext c) {
-            return ProgressDialog(
-              message: "Processing, Please wait...",
-            );
-          });
-    });
     List<Trip> trips = await getTrips();
     setState(() {
       this.trips = trips;
@@ -92,7 +82,6 @@ class _MyTripsState extends State<MyTrips> {
         }
       }
     });
-    Navigator.pop(context);
   }
 
   @override
@@ -121,7 +110,9 @@ class _MyTripsState extends State<MyTrips> {
                           ),
                           const Text(
                             "YOU HAVE NO BOOKED TRIPS FOR NOW!!!",
-                            style: TextStyle(fontWeight: FontWeight.w500),
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.blueGrey),
                           ),
                         ],
                       ),
@@ -157,7 +148,7 @@ class _MyTripsState extends State<MyTrips> {
                                       children: [
                                         Container(
                                           constraints: const BoxConstraints(
-                                              maxWidth: 300),
+                                              maxWidth: 250),
                                           child: Text(
                                             scheduledTrips[index]
                                                 .destinationLocation,
@@ -170,7 +161,7 @@ class _MyTripsState extends State<MyTrips> {
                                         const Divider(),
                                         Container(
                                           constraints: const BoxConstraints(
-                                              maxWidth: 300),
+                                              maxWidth: 250),
                                           child: Text(
                                             scheduledTrips[index]
                                                 .pickUpLocation,
